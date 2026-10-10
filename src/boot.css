@@ -1,0 +1,50 @@
+/* Tela de entrada (senha da família) e aviso de versão nova. O resto do visual fica em app.css. */
+.lock {
+  --lk-bg: #152554; --lk-ink: #fff; --lk-dim: rgba(255,255,255,.72); --lk-field: rgba(255,255,255,.10);
+  --lk-line: rgba(255,255,255,.28); --lk-gold: #F6B73C; --lk-err: #FFB4A3;
+  position: fixed; inset: 0; z-index: 100; background: var(--lk-bg); color: var(--lk-ink);
+  display: flex; align-items: center; justify-content: center; overflow-y: auto;
+  padding: calc(env(safe-area-inset-top, 0px) + 24px) 24px calc(env(safe-area-inset-bottom, 0px) + 24px);
+  font: 17px/1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased; transition: opacity .35s ease, transform .35s ease;
+}
+.lock.out { opacity: 0; transform: scale(1.02); pointer-events: none; }
+.lock-in { width: 100%; max-width: 360px; text-align: center; }
+.lock-logo { width: 88px; height: 88px; border-radius: 22px; box-shadow: 0 0 0 1px rgba(255,255,255,.14), 0 10px 30px rgba(0,0,0,.35); }
+.lock h1 { margin: 18px 0 4px; font-size: 30px; font-weight: 700; letter-spacing: -.02em; }
+.lock-sub { margin: 0 0 28px; color: var(--lk-dim); }
+.lock-form { text-align: left; }
+.lock-form label { display: block; font-size: 15px; font-weight: 600; margin: 0 0 8px; }
+.lock-field { position: relative; }
+.lock-field input {
+  width: 100%; box-sizing: border-box; height: 54px; padding: 0 56px 0 16px; border-radius: 14px;
+  border: 1.5px solid var(--lk-line); background: var(--lk-field); color: var(--lk-ink);
+  font: 17px -apple-system, system-ui, sans-serif; outline: none; -webkit-appearance: none; appearance: none;
+}
+.lock-field input:focus { border-color: var(--lk-gold); box-shadow: 0 0 0 3px rgba(246,183,60,.3); }
+.lock-eye { position: absolute; right: 4px; top: 4px; width: 46px; height: 46px; border: 0; background: none; color: var(--lk-dim); border-radius: 10px; }
+.lock-eye svg, .ios-share svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.lock-eye[aria-pressed="true"] { color: var(--lk-gold); }
+.lock-err { min-height: 22px; margin: 8px 2px; font-size: 15px; color: var(--lk-err); }
+.lock-go {
+  width: 100%; height: 54px; border: 0; border-radius: 14px; background: var(--lk-gold); color: #1d1a10;
+  font: 600 17px -apple-system, system-ui, sans-serif; touch-action: manipulation;
+}
+.lock-go:active { transform: scale(.98); }
+.lock-go:disabled { opacity: .7; }
+.lock-help { margin: 14px 2px 0; font-size: 14px; color: var(--lk-dim); text-align: center; }
+.lock-install { text-align: left; background: rgba(255,255,255,.08); border: 1px solid var(--lk-line); border-radius: 18px; padding: 18px 18px 8px; }
+.lock-install > b { font-size: 18px; }
+.lock-install ol { margin: 12px 0; padding-left: 22px; }
+.lock-install li { margin: 8px 0; }
+.lock-install p { font-size: 14px; color: var(--lk-dim); margin: 8px 0; }
+.ios-share { display: inline-flex; vertical-align: -5px; color: var(--lk-gold); }
+.lock-link { display: block; width: 100%; min-height: 44px; margin-top: 4px; border: 0; background: none; color: var(--lk-gold); font: 15px -apple-system, system-ui, sans-serif; text-decoration: underline; }
+.update {
+  position: fixed; left: 12px; right: 12px; z-index: 90; top: calc(env(safe-area-inset-top, 0px) + 8px);
+  display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 16px; border-radius: 16px;
+  background: #152554; color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.25); font: 15px -apple-system, system-ui, sans-serif;
+}
+.update span { flex: 1; }
+.update button { min-height: 40px; padding: 0 16px; border: 0; border-radius: 12px; background: #F6B73C; color: #1d1a10; font: 600 15px -apple-system, system-ui, sans-serif; }
+@media (prefers-reduced-motion: reduce) { .lock { transition: none; } }

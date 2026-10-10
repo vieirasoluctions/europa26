@@ -1,0 +1,16 @@
+{
+  "name": "europa26",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "vendor": "node tools/vendor.mjs",
+    "build": "node tools/build.mjs",
+    "decrypt": "node tools/decrypt.mjs",
+    "serve": "node tools/serve.mjs"
+  },
+  "devDependencies": {
+    "@anthropic-ai/sdk": "^0.133.0",
+    "esbuild": "^0.28.2",
+    "firebase": "^13.0.0"
+  }
+}

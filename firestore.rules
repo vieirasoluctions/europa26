@@ -1,0 +1,23 @@
+rules_version = '2';
+// Europa 26: cada família tem um espaço fam/<id>, onde <id> é derivado da senha (43 caracteres).
+// Sem a senha não dá para descobrir o caminho, e o conteúdo é cifrado no próprio celular.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /fam/{fam}/{coll}/{doc} {
+      function okFam() { return fam.size() == 43; }
+      function okColl() { return coll in ['expenses', 'notes', 'bookings', 'days', 'files', 'state', 'cfg']; }
+      function okData() {
+        return request.resource.data.keys().hasOnly(['e', 'u'])
+          && request.resource.data.e is string
+          && request.resource.data.e.size() < 400000
+          && request.resource.data.u == request.time;
+      }
+      allow get, list: if request.auth != null && okFam() && okColl();
+      allow create, update: if request.auth != null && okFam() && okColl() && okData();
+      allow delete: if request.auth != null && okFam() && okColl();
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Europa 26</title>
+<meta name="description" content="Copiloto da viagem da família: roteiro, reservas, vouchers e gastos, mesmo offline.">
+<meta name="theme-color" content="#152554">
+<meta name="color-scheme" content="light dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Europa 26">
+<meta name="format-detection" content="telephone=no">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex,nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="stylesheet" href="boot.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="app">
+  <header class="top" id="top"></header>
+  <main class="view" id="view"></main>
+</div>
+<nav class="tabs" aria-label="Seções"><div class="tabs-in" id="tabs"></div></nav>
+<div id="sheets"></div>
+<input type="file" id="filePick" accept="image/jpeg,image/png,image/webp,application/pdf" hidden>
+
+<section class="lock" id="lock" aria-labelledby="lockTitle">
+  <div class="lock-in">
+    <img class="lock-logo" src="icons/icon.svg" alt="" width="88" height="88">
+    <h1 id="lockTitle">Europa 26</h1>
+    <p class="lock-sub" id="lockSub">Abrindo o roteiro...</p>
+    <form class="lock-form" id="lockForm" hidden autocomplete="off">
+      <label for="lockPass">Senha da família</label>
+      <div class="lock-field">
+        <input id="lockPass" type="password" inputmode="text" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go" required aria-describedby="lockHelp lockErr">
+        <button type="button" class="lock-eye" id="lockEye" aria-label="Mostrar senha" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <p class="lock-err" id="lockErr" role="alert"></p>
+      <button class="lock-go" id="lockGo" type="submit">Entrar</button>
+      <p class="lock-help" id="lockHelp">Digite uma vez neste celular. Depois o app abre direto, inclusive sem internet.</p>
+    </form>
+    <div class="lock-install" id="lockInstall" hidden>
+      <b>Instale antes de entrar</b>
+      <ol>
+        <li>Toque em <span class="ios-share" aria-label="Compartilhar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4M5 11v9h14v-9"/></svg></span> <b>Compartilhar</b>, na barra do Safari</li>
+        <li>Escolha <b>Adicionar à Tela de Início</b></li>
+        <li>Abra o <b>Europa 26</b> pelo ícone novo e digite a senha lá</li>
+      </ol>
+      <p>No iPhone, o app instalado guarda os dados separado do Safari. Por isso a senha vai no app.</p>
+      <button type="button" class="lock-link" id="lockAnyway">Usar no Safari mesmo assim</button>
+    </div>
+  </div>
+</section>
+
+<div class="update" id="update" hidden role="status">
+  <span>Nova versão do roteiro disponível</span>
+  <button type="button" id="updateGo">Atualizar</button>
+</div>
+
+<script>
+/* Câmbio de referência: isolado para que um navegador antigo não derrube o resto. */
+window.__fxRef = () => import('https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/eur.min.json', { with: { type: 'json' } });
+</script>
+<script src="config.js"></script>
+<script src="kc.js"></script>
+<script type="module" src="boot.js"></script>
+</body>
+</html>
