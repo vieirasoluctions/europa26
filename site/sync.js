@@ -36,12 +36,13 @@ const withTimeout = p => new Promise((res, rej) => {
 });
 
 export async function connectSync(cfg, keys, onStatus) {
-  const opts = Object.assign({}, cfg); delete opts.emulator;
+  const opts = Object.assign({}, cfg); delete opts.emulator; delete opts.databaseId;
   const app = initializeApp(opts, 'e26');
   let auth;
   try { auth = initializeAuth(app, { persistence: [indexedDBLocalPersistence, browserLocalPersistence] }); }
   catch (e) { auth = initializeAuth(app); }
-  const fs = initializeFirestore(app, { localCache: memoryLocalCache() });
+  // banco com nome próprio (databaseId) ou o padrão do projeto
+  const fs = cfg.databaseId ? initializeFirestore(app, { localCache: memoryLocalCache() }, cfg.databaseId) : initializeFirestore(app, { localCache: memoryLocalCache() });
   if (cfg.emulator) { // só para testes locais
     connectAuthEmulator(auth, 'http://' + cfg.emulator + ':9099', { disableWarnings: true });
     connectFirestoreEmulator(fs, cfg.emulator, 8080);
