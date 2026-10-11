@@ -2,13 +2,12 @@
    e as regras do Firestore). Cole abaixo o objeto firebaseConfig do seu projeto. */
 window.E26_CONFIG = {
   version: '',
-  firebase: null,
-  /* exemplo:
   firebase: {
-    apiKey: 'AIza...',
-    authDomain: 'europa26-xxxx.firebaseapp.com',
-    projectId: 'europa26-xxxx',
-    appId: '1:123:web:abc',
+    apiKey: 'AIzaSyD0VCCBxE5ntB1HQfKro_fAaLIg2bcLiH8',
+    authDomain: 'europa26-6245b.firebaseapp.com',
+    projectId: 'europa26-6245b',
+    storageBucket: 'europa26-6245b.firebasestorage.app',
+    messagingSenderId: '997474746508',
+    appId: '1:997474746508:web:306e5a56bc6f74e702fba9',
   },
-  */
 };
