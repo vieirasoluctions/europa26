@@ -1,6 +1,6 @@
 # Europa 26 · Copiloto da viagem (PWA)
 
-App da viagem da família (19/10 a 09/11/2026) instalado na tela inicial do iPhone:
+App de viagem da família instalado na tela inicial do iPhone:
 roteiro, reservas, vouchers, gastos, frases e guias. Funciona **sem internet** e
 **sincroniza** os dois celulares quando há conexão.
 

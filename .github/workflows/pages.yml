@@ -26,6 +26,8 @@ jobs:
           test ! -e private
           ! grep -rl "window.TRIP = \|window.TRIP_PLACES = \|Vinicius\|Luiza" site
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
