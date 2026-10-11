@@ -1,7 +1,7 @@
 /* Configuração pública do app (não há segredo aqui: a proteção é a senha da família
    e as regras do Firestore). Cole abaixo o objeto firebaseConfig do seu projeto. */
 window.E26_CONFIG = {
-  version: 'e19569fbf8',
+  version: '21d852bd11',
   firebase: null,
   /* exemplo:
   firebase: {

@@ -29,7 +29,10 @@ self.addEventListener('activate', ev => {
   })());
 });
 
-self.addEventListener('message', ev => { if (ev.data === 'skipWaiting') self.skipWaiting(); });
+self.addEventListener('message', ev => {
+  if (ev.data === 'skipWaiting') self.skipWaiting();
+  if (ev.data === 'version' && ev.ports && ev.ports[0]) ev.ports[0].postMessage({ version: VERSION });
+});
 
 const scopePath = new URL(self.registration.scope).pathname;
 const rel = url => url.pathname.slice(scopePath.length);

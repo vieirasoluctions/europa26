@@ -14,15 +14,35 @@ async function startSW() {
   if (!('serviceWorker' in navigator)) return;
   try {
     swReg = await navigator.serviceWorker.register('sw.js', { scope: './' });
-    const offer = w => { if (!w) return; $('#update').hidden = false; $('#updateGo').onclick = () => w.postMessage('skipWaiting'); };
-    if (swReg.waiting && navigator.serviceWorker.controller) offer(swReg.waiting);
+    // pergunta ao service worker em espera qual versão ele traz
+    const versionOf = w => new Promise(res => {
+      try { const ch = new MessageChannel(); ch.port1.onmessage = e => res(e.data && e.data.version); w.postMessage('version', [ch.port2]); setTimeout(() => res(null), 3000); }
+      catch (e) { res(null); }
+    });
+    const banner = $('#update');
+    // só avisa quando há mesmo uma versão diferente esperando para entrar
+    const offer = async w => {
+      if (!w || w.state !== 'installed' || !navigator.serviceWorker.controller) return;
+      const v = await versionOf(w);
+      if (v && CFG.version && v === CFG.version) return;
+      banner.hidden = false;
+      w.addEventListener('statechange', () => { if (w.state === 'redundant') banner.hidden = true; });
+    };
+    $('#updateGo').addEventListener('click', () => {
+      banner.hidden = true;
+      const w = swReg.waiting;
+      if (!w) { location.reload(); return; }
+      window.__e26Updating = true;
+      w.postMessage('skipWaiting');
+      setTimeout(() => location.reload(), 3000); // se a troca não avisar, recarrega mesmo assim
+    });
+    if (swReg.waiting) offer(swReg.waiting);
     swReg.addEventListener('updatefound', () => {
       const w = swReg.installing;
-      w && w.addEventListener('statechange', () => { if (w.state === 'installed' && navigator.serviceWorker.controller) offer(w); });
+      w && w.addEventListener('statechange', () => { if (w.state === 'installed') offer(w); });
     });
     let reloaded = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloaded && window.__e26Updating) { reloaded = true; location.reload(); } });
-    $('#updateGo').addEventListener('click', () => { window.__e26Updating = true; });
     // procura versão nova ao voltar para o app
     document.addEventListener('visibilitychange', () => { if (!document.hidden && navigator.onLine) swReg.update().catch(() => {}); });
   } catch (e) { /* sem SW: funciona online */ }
