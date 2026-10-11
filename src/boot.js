@@ -10,46 +10,51 @@ const standalone = navigator.standalone === true || matchMedia('(display-mode: s
 
 /* ---------- service worker e atualização ---------- */
 let swReg = null;
+/* Atualização sem aviso no topo: o app mostra um cartão em Mais quando há versão nova
+   (window.E26_UPDATE.ready) e aplica sozinho na próxima vez que for para segundo plano. */
+const UPD = window.E26_UPDATE = { ready: false, apply: () => location.reload(), check: async () => false };
 async function startSW() {
   if (!('serviceWorker' in navigator)) return;
   try {
     swReg = await navigator.serviceWorker.register('sw.js', { scope: './' });
-    // pergunta ao service worker em espera qual versão ele traz
+    // pergunta ao service worker novo qual versão ele traz
     const versionOf = w => new Promise(res => {
       try { const ch = new MessageChannel(); ch.port1.onmessage = e => res(e.data && e.data.version); w.postMessage('version', [ch.port2]); setTimeout(() => res(null), 3000); }
       catch (e) { res(null); }
     });
-    const banner = $('#update');
-    // só avisa quando há mesmo uma versão diferente esperando para entrar
-    const offer = async w => {
-      if (!w || w.state !== 'installed' || !navigator.serviceWorker.controller) return;
+    let reloaded = false;
+    const reload = () => { if (!reloaded) { reloaded = true; location.reload(); } };
+    const ready = () => {
+      if (UPD.ready) return;
+      UPD.ready = true;
+      window.dispatchEvent(new CustomEvent('e26:update'));
+      document.addEventListener('visibilitychange', () => { if (document.hidden) reload(); }); // aplica ao sair do app
+    };
+    const consider = async w => {
+      if (!w || !navigator.serviceWorker.controller) return; // primeira instalação
       const v = await versionOf(w);
       if (v && CFG.version && v === CFG.version) return;
-      banner.hidden = false;
-      w.addEventListener('statechange', () => { if (w.state === 'redundant') banner.hidden = true; });
+      ready();
     };
-    $('#updateGo').addEventListener('click', () => {
-      banner.hidden = true;
+    UPD.apply = () => {
       const w = swReg.waiting;
-      if (!w) { reload(); return; }
-      window.__e26Updating = true;
-      w.postMessage('skipWaiting');
-      setTimeout(reload, 3000); // se a troca não avisar, recarrega mesmo assim
-    });
-    if (swReg.waiting) offer(swReg.waiting);
+      if (w) { w.postMessage('skipWaiting'); setTimeout(reload, 3000); } else reload();
+    };
+    // "Procurar atualização": baixa a versão nova, se houver, e espera ela ficar pronta
+    UPD.check = async () => {
+      try { await swReg.update(); } catch (e) { return UPD.ready; }
+      if (swReg.installing || swReg.waiting) await new Promise(r => { window.addEventListener('e26:update', r, { once: true }); setTimeout(r, 30000); });
+      return UPD.ready;
+    };
+    if (swReg.waiting) consider(swReg.waiting);
     swReg.addEventListener('updatefound', () => {
       const w = swReg.installing;
-      w && w.addEventListener('statechange', () => { if (w.state === 'installed') offer(w); });
+      w && w.addEventListener('statechange', () => { if (w.state === 'installed' || w.state === 'activated') consider(w); });
     });
-    // versão nova assumiu: recarrega se a pessoa pediu, ou se o app está em segundo plano; senão, oferece
-    let reloaded = false;
     const hadController = !!navigator.serviceWorker.controller;
-    const reload = () => { if (!reloaded) { reloaded = true; location.reload(); } };
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (!hadController) return; // primeira instalação
-      if (window.__e26Updating || document.hidden) return reload();
-      banner.hidden = false;
-      document.addEventListener('visibilitychange', () => { if (document.hidden) reload(); });
+      if (document.hidden) reload(); else ready();
     });
     // procura versão nova ao voltar para o app
     document.addEventListener('visibilitychange', () => { if (!document.hidden && navigator.onLine) swReg.update().catch(() => {}); });

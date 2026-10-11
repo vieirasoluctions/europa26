@@ -40,11 +40,4 @@
 .lock-install p { font-size: 14px; color: var(--lk-dim); margin: 8px 0; }
 .ios-share { display: inline-flex; vertical-align: -5px; color: var(--lk-gold); }
 .lock-link { display: block; width: 100%; min-height: 44px; margin-top: 4px; border: 0; background: none; color: var(--lk-gold); font: 15px -apple-system, system-ui, sans-serif; text-decoration: underline; }
-.update {
-  position: fixed; left: 12px; right: 12px; z-index: 90; top: calc(env(safe-area-inset-top, 0px) + 8px);
-  display: flex; align-items: center; gap: 12px; padding: 10px 10px 10px 16px; border-radius: 16px;
-  background: #152554; color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.25); font: 15px -apple-system, system-ui, sans-serif;
-}
-.update span { flex: 1; }
-.update button { min-height: 40px; padding: 0 16px; border: 0; border-radius: 12px; background: #F6B73C; color: #1d1a10; font: 600 15px -apple-system, system-ui, sans-serif; }
 @media (prefers-reduced-motion: reduce) { .lock { transition: none; } }
