@@ -17,8 +17,8 @@ self.addEventListener('install', ev => {
         await c.put(u, r);
       }));
     }
-    // primeira instalação assume na hora; atualização espera o "Atualizar"
-    if (!(await self.clients.matchAll()).length) self.skipWaiting();
+    // assume assim que terminar de baixar; o app aberto avisa e recarrega na hora certa
+    self.skipWaiting();
   })());
 });
 

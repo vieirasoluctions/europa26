@@ -1,7 +1,7 @@
 /* Service worker do Europa 26: guarda o app inteiro para funcionar sem internet
    e abre os vouchers cifrados (docs/*.jpg) com a chave da família. */
 importScripts('kc.js');
-const VERSION = '21d852bd11';
+const VERSION = 'f2639d2568';
 const PRECACHE = ["ai.js","app.css","boot.css","boot.js","config.js","data/app.js.enc","data/docs/alsa-1.jpg.enc","data/docs/alsa-2.jpg.enc","data/docs/alsa-3.jpg.enc","data/docs/bb-1.jpg.enc","data/docs/bb-2.jpg.enc","data/docs/bcn-1.jpg.enc","data/docs/bcn-2.jpg.enc","data/docs/carv-1.jpg.enc","data/docs/disney-adulto-1.jpg.enc","data/docs/disney-adulto-2.jpg.enc","data/docs/disney-crianca.jpg.enc","data/docs/faro-1.jpg.enc","data/docs/faro-2.jpg.enc","data/docs/ib-app.jpg.enc","data/docs/ib-conf-1.jpg.enc","data/docs/ib-conf-3.jpg.enc","data/docs/ib-flora-1.jpg.enc","data/docs/ib-vinicius-1.jpg.enc","data/docs/latam-1.jpg.enc","data/docs/latam-2.jpg.enc","data/docs/lis-1.jpg.enc","data/docs/mal-1.jpg.enc","data/docs/mal-2.jpg.enc","data/docs/paris-1.jpg.enc","data/docs/sagrada-adulto-1.jpg.enc","data/docs/sagrada-adulto-2.jpg.enc","data/docs/sagrada-crianca.jpg.enc","data/docs/seguro-flora-1.jpg.enc","data/docs/seguro-flora-2.jpg.enc","data/docs/seguro-flora-3.jpg.enc","data/docs/seguro-luiza-1.jpg.enc","data/docs/seguro-luiza-2.jpg.enc","data/docs/seguro-luiza-3.jpg.enc","data/docs/seguro-vinicius-1.jpg.enc","data/docs/seguro-vinicius-2.jpg.enc","data/docs/seguro-vinicius-3.jpg.enc","data/docs/tap-1.jpg.enc","data/docs/tap-4.jpg.enc","data/docs/tgv-flora-1.jpg.enc","data/docs/tgv-luiza-1.jpg.enc","data/docs/tgv-vinicius-1.jpg.enc","data/meta.json","data/places.js.enc","data/trip.enc","icons/apple-touch-icon.png","icons/icon-192.png","icons/icon-512.png","icons/icon-maskable-512.png","icons/icon.svg","index.html","kc.js","manifest.webmanifest","phrases.js","sync.js","vendor/anthropic.js","vendor/firebase.js"];
 const CACHE = 'e26-' + VERSION;
 const RUNTIME = 'e26-runtime';
@@ -17,8 +17,8 @@ self.addEventListener('install', ev => {
         await c.put(u, r);
       }));
     }
-    // primeira instalação assume na hora; atualização espera o "Atualizar"
-    if (!(await self.clients.matchAll()).length) self.skipWaiting();
+    // assume assim que terminar de baixar; o app aberto avisa e recarrega na hora certa
+    self.skipWaiting();
   })());
 });
 

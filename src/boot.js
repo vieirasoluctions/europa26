@@ -31,18 +31,26 @@ async function startSW() {
     $('#updateGo').addEventListener('click', () => {
       banner.hidden = true;
       const w = swReg.waiting;
-      if (!w) { location.reload(); return; }
+      if (!w) { reload(); return; }
       window.__e26Updating = true;
       w.postMessage('skipWaiting');
-      setTimeout(() => location.reload(), 3000); // se a troca não avisar, recarrega mesmo assim
+      setTimeout(reload, 3000); // se a troca não avisar, recarrega mesmo assim
     });
     if (swReg.waiting) offer(swReg.waiting);
     swReg.addEventListener('updatefound', () => {
       const w = swReg.installing;
       w && w.addEventListener('statechange', () => { if (w.state === 'installed') offer(w); });
     });
+    // versão nova assumiu: recarrega se a pessoa pediu, ou se o app está em segundo plano; senão, oferece
     let reloaded = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => { if (!reloaded && window.__e26Updating) { reloaded = true; location.reload(); } });
+    const hadController = !!navigator.serviceWorker.controller;
+    const reload = () => { if (!reloaded) { reloaded = true; location.reload(); } };
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController) return; // primeira instalação
+      if (window.__e26Updating || document.hidden) return reload();
+      banner.hidden = false;
+      document.addEventListener('visibilitychange', () => { if (document.hidden) reload(); });
+    });
     // procura versão nova ao voltar para o app
     document.addEventListener('visibilitychange', () => { if (!document.hidden && navigator.onLine) swReg.update().catch(() => {}); });
   } catch (e) { /* sem SW: funciona online */ }
