@@ -1,8 +1,8 @@
 /* Service worker do Europa 26: guarda o app inteiro para funcionar sem internet
    e abre os vouchers cifrados (docs/*.jpg) com a chave da família. */
 importScripts('kc.js');
-const VERSION = '289dc3d66d';
-const PRECACHE = ["ai.js","app.css","boot.css","boot.js","config.js","data/app.js.enc","data/docs/alsa-1.jpg.enc","data/docs/alsa-2.jpg.enc","data/docs/alsa-3.jpg.enc","data/docs/bb-1.jpg.enc","data/docs/bb-2.jpg.enc","data/docs/bcn-1.jpg.enc","data/docs/bcn-2.jpg.enc","data/docs/carv-1.jpg.enc","data/docs/disney-adulto-1.jpg.enc","data/docs/disney-adulto-2.jpg.enc","data/docs/disney-crianca.jpg.enc","data/docs/faro-1.jpg.enc","data/docs/faro-2.jpg.enc","data/docs/ib-app.jpg.enc","data/docs/ib-conf-1.jpg.enc","data/docs/ib-conf-3.jpg.enc","data/docs/ib-flora-1.jpg.enc","data/docs/ib-vinicius-1.jpg.enc","data/docs/latam-1.jpg.enc","data/docs/latam-2.jpg.enc","data/docs/lis-1.jpg.enc","data/docs/mal-1.jpg.enc","data/docs/mal-2.jpg.enc","data/docs/paris-1.jpg.enc","data/docs/sagrada-adulto-1.jpg.enc","data/docs/sagrada-adulto-2.jpg.enc","data/docs/sagrada-crianca.jpg.enc","data/docs/seguro-flora-1.jpg.enc","data/docs/seguro-flora-2.jpg.enc","data/docs/seguro-flora-3.jpg.enc","data/docs/seguro-luiza-1.jpg.enc","data/docs/seguro-luiza-2.jpg.enc","data/docs/seguro-luiza-3.jpg.enc","data/docs/seguro-vinicius-1.jpg.enc","data/docs/seguro-vinicius-2.jpg.enc","data/docs/seguro-vinicius-3.jpg.enc","data/docs/tap-1.jpg.enc","data/docs/tap-4.jpg.enc","data/docs/tgv-flora-1.jpg.enc","data/docs/tgv-luiza-1.jpg.enc","data/docs/tgv-vinicius-1.jpg.enc","data/meta.json","data/places.js.enc","data/trip.enc","icons/apple-touch-icon.png","icons/icon-192.png","icons/icon-512.png","icons/icon-maskable-512.png","icons/icon.svg","index.html","kc.js","manifest.webmanifest","phrases.js","sync.js","vendor/anthropic.js","vendor/firebase.js"];
+const VERSION = '6eef46bb36';
+const PRECACHE = ["ai.js","app.css","att.js","boot.css","boot.js","config.js","data/app.js.enc","data/docs/alsa-1.jpg.enc","data/docs/alsa-2.jpg.enc","data/docs/alsa-3.jpg.enc","data/docs/bb-1.jpg.enc","data/docs/bb-2.jpg.enc","data/docs/bcn-1.jpg.enc","data/docs/bcn-2.jpg.enc","data/docs/carv-1.jpg.enc","data/docs/disney-adulto-1.jpg.enc","data/docs/disney-adulto-2.jpg.enc","data/docs/disney-crianca.jpg.enc","data/docs/faro-1.jpg.enc","data/docs/faro-2.jpg.enc","data/docs/ib-app.jpg.enc","data/docs/ib-conf-1.jpg.enc","data/docs/ib-conf-3.jpg.enc","data/docs/ib-flora-1.jpg.enc","data/docs/ib-vinicius-1.jpg.enc","data/docs/latam-1.jpg.enc","data/docs/latam-2.jpg.enc","data/docs/lis-1.jpg.enc","data/docs/mal-1.jpg.enc","data/docs/mal-2.jpg.enc","data/docs/paris-1.jpg.enc","data/docs/sagrada-adulto-1.jpg.enc","data/docs/sagrada-adulto-2.jpg.enc","data/docs/sagrada-crianca.jpg.enc","data/docs/seguro-flora-1.jpg.enc","data/docs/seguro-flora-2.jpg.enc","data/docs/seguro-flora-3.jpg.enc","data/docs/seguro-luiza-1.jpg.enc","data/docs/seguro-luiza-2.jpg.enc","data/docs/seguro-luiza-3.jpg.enc","data/docs/seguro-vinicius-1.jpg.enc","data/docs/seguro-vinicius-2.jpg.enc","data/docs/seguro-vinicius-3.jpg.enc","data/docs/tap-1.jpg.enc","data/docs/tap-4.jpg.enc","data/docs/tgv-flora-1.jpg.enc","data/docs/tgv-luiza-1.jpg.enc","data/docs/tgv-vinicius-1.jpg.enc","data/meta.json","data/places.js.enc","data/trip.enc","icons/apple-touch-icon.png","icons/icon-192.png","icons/icon-512.png","icons/icon-maskable-512.png","icons/icon.svg","index.html","kc.js","manifest.webmanifest","phrases.js","sync.js","vendor/anthropic.js","vendor/firebase.js","vendor/pdf.min.mjs","vendor/pdf.worker.min.mjs"];
 const CACHE = 'e26-' + VERSION;
 const RUNTIME = 'e26-runtime';
 
@@ -24,7 +24,7 @@ self.addEventListener('install', ev => {
 
 self.addEventListener('activate', ev => {
   ev.waitUntil((async () => {
-    for (const k of await caches.keys()) if (k !== CACHE && k !== RUNTIME && k.startsWith('e26-')) await caches.delete(k);
+    for (const k of await caches.keys()) if (k !== CACHE && k !== RUNTIME && k !== 'e26-att' && k.startsWith('e26-')) await caches.delete(k);
     await self.clients.claim();
   })());
 });
@@ -40,6 +40,18 @@ const rel = url => url.pathname.slice(scopePath.length);
 async function fromCache(key) {
   const c = await caches.open(CACHE);
   return c.match(key, { ignoreSearch: true });
+}
+
+/* anexos incluídos pela família (guardados cifrados pelo app em e26-att) */
+async function openAtt(req) {
+  const keys = await KC.loadKeys();
+  if (!keys || !keys.aes) return new Response('', { status: 403 });
+  const r = await (await caches.open('e26-att')).match(req.url, { ignoreSearch: true });
+  if (!r) return new Response('', { status: 404 });
+  try {
+    const u = await KC.decrypt(keys.aes, await r.arrayBuffer());
+    return new Response(u, { headers: { 'Content-Type': r.headers.get('X-Type') || 'image/jpeg', 'Cache-Control': 'no-store' } });
+  } catch (e) { return new Response('', { status: 403 }); }
 }
 
 async function openDoc(path) {
@@ -61,6 +73,7 @@ self.addEventListener('fetch', ev => {
   if (url.origin === self.location.origin && url.pathname.startsWith(scopePath)) {
     const p = rel(url);
     if (/^docs\/.+\.jpg$/.test(p)) { ev.respondWith(openDoc(p)); return; }
+    if (/^att\/[a-z0-9]+$/.test(p)) { ev.respondWith(openAtt(req)); return; }
     if (req.mode === 'navigate') { ev.respondWith(fromCache('index.html').then(r => r || fetch(req))); return; }
     ev.respondWith(fromCache(p || 'index.html').then(r => r || fetch(req)));
     return;

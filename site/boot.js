@@ -153,9 +153,9 @@ function installCapabilities(keys) {
     try {
       const m = await import('./sync.js');
       const db = await m.connectSync(CFG.firebase, keys, st => { E.status = st; emit(); });
-      db.collection('cfg').onSnapshot(snap => {
-        const d = snap.docs.find(x => x.id === 'ai');
-        const k = d && d.data() && d.data().k;
+      // só o documento da chave: a coleção cfg também guarda os pedaços dos anexos
+      db.doc('cfg/ai').onSnapshot(snap => {
+        const k = snap.exists && snap.data() && snap.data().k;
         if (k && k !== E.aiKey) storeAi(k).then(() => window.dispatchEvent(new CustomEvent('e26:ai')));
         else if (!k && E.aiKey && !snap.fromCache) storeAi('').then(() => window.dispatchEvent(new CustomEvent('e26:ai'))); // desligado no outro celular
       });
@@ -185,13 +185,42 @@ function installCapabilities(keys) {
   E.standalone = standalone;
   E.version = CFG.version || '';
 
+  // anexos: guardados cifrados aqui e no banco; o que o outro celular incluir é baixado uma vez
+  let assetsP = null;
+  const getAssets = () => assetsP || (assetsP = import('./att.js').then(m => {
+    const a = m.makeAssets(getDb, keys);
+    getDb().then(db => {
+      if (!db) return;
+      // o registro pode chegar antes das páginas terminarem de subir no outro celular: repete até baixar tudo
+      let ids = [], timer = 0, busy = false;
+      const pull = async () => {
+        clearTimeout(timer);
+        if (busy) return; busy = true;
+        const r = await a.ensure(ids).catch(() => ({ got: 0, missing: ids.length }));
+        busy = false;
+        if (r.got) window.dispatchEvent(new CustomEvent('e26:files'));
+        if (r.missing) timer = setTimeout(pull, 15000);
+      };
+      db.collection('files').onSnapshot(snap => {
+        ids = [];
+        snap.docs.forEach(d => { const f = d.data() || {}; (f.pages || [f.a]).forEach(x => x && ids.push(x)); });
+        pull();
+      });
+      addEventListener('online', pull);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) pull(); });
+    });
+    return a;
+  }).catch(() => null));
+  getAssets();
+
   const downloads = makeDownloads();
   window.claude = {
     use(name) {
       if (name === 'db') return getDb();
       if (name === 'downloads') return Promise.resolve(downloads);
       if (name === 'sample') return getSample();
-      return Promise.resolve(null); // user, assets: não usados fora do claude.ai
+      if (name === 'assets') return getAssets();
+      return Promise.resolve(null); // user: não usado fora do claude.ai
     },
   };
 }

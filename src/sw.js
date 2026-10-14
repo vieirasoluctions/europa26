@@ -24,7 +24,7 @@ self.addEventListener('install', ev => {
 
 self.addEventListener('activate', ev => {
   ev.waitUntil((async () => {
-    for (const k of await caches.keys()) if (k !== CACHE && k !== RUNTIME && k.startsWith('e26-')) await caches.delete(k);
+    for (const k of await caches.keys()) if (k !== CACHE && k !== RUNTIME && k !== 'e26-att' && k.startsWith('e26-')) await caches.delete(k);
     await self.clients.claim();
   })());
 });
@@ -40,6 +40,18 @@ const rel = url => url.pathname.slice(scopePath.length);
 async function fromCache(key) {
   const c = await caches.open(CACHE);
   return c.match(key, { ignoreSearch: true });
+}
+
+/* anexos incluídos pela família (guardados cifrados pelo app em e26-att) */
+async function openAtt(req) {
+  const keys = await KC.loadKeys();
+  if (!keys || !keys.aes) return new Response('', { status: 403 });
+  const r = await (await caches.open('e26-att')).match(req.url, { ignoreSearch: true });
+  if (!r) return new Response('', { status: 404 });
+  try {
+    const u = await KC.decrypt(keys.aes, await r.arrayBuffer());
+    return new Response(u, { headers: { 'Content-Type': r.headers.get('X-Type') || 'image/jpeg', 'Cache-Control': 'no-store' } });
+  } catch (e) { return new Response('', { status: 403 }); }
 }
 
 async function openDoc(path) {
@@ -61,6 +73,7 @@ self.addEventListener('fetch', ev => {
   if (url.origin === self.location.origin && url.pathname.startsWith(scopePath)) {
     const p = rel(url);
     if (/^docs\/.+\.jpg$/.test(p)) { ev.respondWith(openDoc(p)); return; }
+    if (/^att\/[a-z0-9]+$/.test(p)) { ev.respondWith(openAtt(req)); return; }
     if (req.mode === 'navigate') { ev.respondWith(fromCache('index.html').then(r => r || fetch(req))); return; }
     ev.respondWith(fromCache(p || 'index.html').then(r => r || fetch(req)));
     return;

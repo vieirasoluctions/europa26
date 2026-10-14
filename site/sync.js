@@ -6,7 +6,7 @@
    fam/<id da família>/<colecao>/<nome opaco>. Sem a senha, nada é legível. */
 import {
   initializeApp, initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, signInAnonymously, onAuthStateChanged,
-  initializeFirestore, memoryLocalCache, doc, collection, setDoc, deleteDoc, onSnapshot, runTransaction, serverTimestamp,
+  initializeFirestore, memoryLocalCache, doc, collection, setDoc, getDoc, deleteDoc, onSnapshot, runTransaction, serverTimestamp,
   connectAuthEmulator, connectFirestoreEmulator,
 } from './vendor/firebase.js';
 
@@ -69,6 +69,23 @@ export async function connectSync(cfg, keys, onStatus) {
       return {
         set: d => run(async () => setDoc(await ref(c, id), await pack(id, d))),
         delete: () => run(async () => deleteDoc(await ref(c, id))),
+        get: () => run(async () => { const sn = await getDoc(await ref(c, id)); if (!sn.exists()) return null; try { return (await unpack(sn)).d; } catch (e) { return null; } }),
+        // escuta um documento só (usado para a chave do assistente)
+        onSnapshot(cb, onErr) {
+          let off = () => {}, stopped = false;
+          ready.then(async () => {
+            if (stopped) return;
+            const r = await ref(c, id);
+            if (stopped) return;
+            off = onSnapshot(r, async sn => {
+              if (sn.metadata.fromCache) return; // sem internet: não sabe o valor real ainda
+              let d = null;
+              if (sn.exists()) { try { d = (await unpack(sn)).d; } catch (e) { d = null; } }
+              if (!stopped) cb({ exists: d != null, data: () => d, fromCache: sn.metadata.fromCache });
+            }, e => { onErr && onErr(mapErr(e)); });
+          });
+          return () => { stopped = true; off(); };
+        },
         // mescla no servidor dentro de uma transação: dois celulares marcando ao mesmo tempo não se atropelam
         update: patch => run(async () => {
           const r = await ref(c, id);
@@ -87,7 +104,12 @@ export async function connectSync(cfg, keys, onStatus) {
           let off = () => {}, stopped = false, seq = 0;
           ready.then(() => {
             if (stopped) return;
+            let fromServer = false;
             off = onSnapshot(collection(fs, root + '/' + c), async qs => {
+              // aberto sem internet, o cache em memória ainda está vazio: não é "o banco está vazio".
+              // Ignora até a 1ª resposta do servidor; o app segue com o que guardou no aparelho.
+              if (qs.metadata.fromCache && !fromServer) return;
+              fromServer = true;
               const my = ++seq, docs = [];
               await Promise.all(qs.docs.map(async s => {
                 try { const o = await unpack(s); if (o && o.id != null) docs.push({ id: String(o.id), exists: true, data: () => o.d }); }
