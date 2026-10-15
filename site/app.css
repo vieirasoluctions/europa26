@@ -624,3 +624,9 @@ a.link { text-decoration: none; }
 @media (prefers-contrast: more) {
   :root { --muted: var(--ink-2); --line: var(--line-2); }
 }
+
+/* Apps para baixar */
+.app-row .row-main { gap: 4px; }
+.app-row .app-city { font-size: 13px; font-weight: 600; color: var(--hue, var(--ink-2)); letter-spacing: .01em; }
+.app-act { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.app-act .pill[disabled] { opacity: .55; }
