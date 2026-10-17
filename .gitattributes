@@ -1,0 +1,6 @@
+# Fim de linha igual em Linux e Windows: o build calcula a versão do app a partir dos arquivos.
+* text=auto eol=lf
+*.enc binary
+*.jpg binary
+*.png binary
+*.mjs text eol=lf

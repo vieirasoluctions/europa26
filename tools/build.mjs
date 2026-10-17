@@ -4,6 +4,7 @@
    - escreve o service worker com a lista de arquivos e a versão
    A senha vem de E26_PASS ou de private/senha.txt (criada na 1ª vez). private/ nunca vai para o git. */
 import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { createRequire } from 'node:module';
@@ -11,7 +12,7 @@ import words from './words.js';
 
 const require = createRequire(import.meta.url);
 require('../src/kc.js'); const KC = globalThis.KC;
-const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = path.join(ROOT, 'src'), PRIV = path.join(ROOT, 'private'), OUT = path.join(ROOT, 'site');
 const META = path.join(ROOT, 'tools', 'meta.json');
 

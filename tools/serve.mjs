@@ -1,8 +1,9 @@
 /* Servidor local simples para testar site/ (http://localhost:8026/europa26/), imitando o GitHub Pages. */
 import http from 'node:http';
 import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', process.argv[2] || 'site');
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', process.argv[2] || 'site');
 const BASE = '/europa26/';
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.webmanifest': 'application/manifest+json', '.png': 'image/png', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg', '.enc': 'application/octet-stream' };
 http.createServer((req, res) => {

@@ -10,18 +10,20 @@ Funciona offline e sincroniza entre dois celulares. Repositório **público**: n
 - `tools/` · `build.mjs`, `decrypt.mjs`, `serve.mjs`, `vendor.mjs`, `meta.json` (sal da senha; não apague).
 
 ## Senha da família (regra de ouro)
-- A senha vem da variável de ambiente **`E26_PASS`**. Nunca peça a senha no chat, nunca a escreva em arquivo versionado, commit, log ou resposta.
-- Se `E26_PASS` não estiver definida, pare e peça para a pessoa configurá-la nas variáveis do ambiente da sessão.
+- A senha vem de **`E26_PASS`** (variável de ambiente) ou, no computador da família, de `private/senha.txt` (ignorado pelo git). Os scripts leem as duas sozinhos.
+- Nunca peça a senha no chat, nunca a escreva em arquivo versionado, commit, log ou resposta.
+- Se não houver nem `E26_PASS` nem `private/senha.txt`, pare e peça para a pessoa configurá-la.
 - O build recusa senha errada ou ausente. Só use `E26_NEW_PASS=1` se a pessoa pedir para trocar a senha de propósito (os celulares precisam digitar a nova).
 
 ## Como alterar dados ou telas
 ```bash
 git pull
-E26_PASS="$E26_PASS" npm run decrypt     # recria private/ a partir de site/data
+npm run decrypt     # só se private/ não existir; recria a pasta a partir de site/data
 # edite private/trip.js, private/app.js ou private/places.js (vouchers novos em private/docs/)
-E26_PASS="$E26_PASS" npm run build       # regera site/ cifrado
+npm run build       # regera site/ cifrado
 git add -A && git commit -m "..." && git push   # o push em site/ publica no GitHub Pages sozinho
 ```
+No Windows (PowerShell), para passar a senha por variável: `$env:E26_PASS='a-senha'; npm run build`.
 - Só rode o build quando houver mudança real: cada build regrava todos os `.enc` (grande diff no git).
 - Mantenha os **ids** dos itens em `trip.js`: marcações e gastos da família ficam presos a eles.
 - Os celulares atualizam sozinhos; em Mais aparece o cartão "Nova versão do app".
