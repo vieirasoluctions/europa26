@@ -42,9 +42,9 @@ O plano gratuito (Spark) sobra: são duas pessoas e poucos KB por dia.
 ## Atualizar o roteiro
 ```bash
 npm install
-npm run decrypt         # num clone novo: recria private/ a partir de site/data (pede E26_PASS)
+E26_PASS='a-senha' npm run decrypt   # num clone novo: recria private/ a partir de site/data
 # edite private/trip.js, private/app.js, private/places.js (e private/docs/ se houver voucher novo)
-npm run build           # gera site/ cifrado com a mesma senha
+E26_PASS='a-senha' npm run build     # gera site/ cifrado (recusa senha errada ou ausente)
 git add site && git commit -m "Roteiro: ..." && git push
 ```
 Os celulares mostram **"Nova versão do roteiro disponível → Atualizar"** na próxima abertura com internet.

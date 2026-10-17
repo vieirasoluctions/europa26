@@ -19,6 +19,13 @@ function passphrase() {
   if (process.env.E26_PASS) return process.env.E26_PASS;
   const f = path.join(PRIV, 'senha.txt');
   if (fs.existsSync(f)) return fs.readFileSync(f, 'utf8').trim();
+  // Já existe um site publicado com senha: nunca sortear outra por engano (os celulares deixariam de abrir o roteiro).
+  if (fs.existsSync(path.join(OUT, 'data', 'trip.enc')) && process.env.E26_NEW_PASS !== '1') {
+    console.error('Falta a senha da família. Rode com E26_PASS=\'a-senha\' (ou npm run decrypt antes).\n' +
+      'Não vou criar senha nova porque já existe um site publicado com a senha atual.\n' +
+      'Para trocar de senha de propósito: E26_NEW_PASS=1 npm run build');
+    process.exit(1);
+  }
   const pick = () => words[crypto.randomInt(words.length)];
   const p = [pick(), pick(), pick(), pick(), String(crypto.randomInt(100, 1000))].join('-');
   fs.writeFileSync(f, p + '\n', { mode: 0o600 });
@@ -48,6 +55,22 @@ function walk(d, base = d, out = []) {
 
 const pass = passphrase(), m = meta();
 const keys = await KC.derive(pass, m);
+// A senha tem que ser a do site já publicado; senão o build cifraria tudo com outra e quebraria os celulares.
+const published = path.join(OUT, 'data', 'trip.enc');
+if (fs.existsSync(published) && process.env.E26_NEW_PASS !== '1') {
+  try { await KC.decrypt(keys.aes, fs.readFileSync(published)); }
+  catch (e) {
+    console.error('A senha não confere com o site já publicado (site/data/trip.enc). Nada foi alterado.\n' +
+      'Use a senha da família. Para trocar de senha de propósito: E26_NEW_PASS=1 npm run build');
+    process.exit(1);
+  }
+}
+// Confere tudo antes de apagar site/: sem private/ o build falharia no meio e deixaria o site vazio.
+const needed = ['trip.js', 'app.js', 'places.js'].filter(f => !fs.existsSync(path.join(PRIV, f)));
+if (needed.length) {
+  console.error('Faltam em private/: ' + needed.join(', ') + '.\nRode antes: E26_PASS=\'a-senha\' npm run decrypt\nNada foi alterado.');
+  process.exit(1);
+}
 rmrf(OUT); mkdirp(path.join(OUT, 'data', 'docs'));
 // app.js e places.js (em private/) citam a família e o roteiro: vão cifrados, como o trip.js
 const SECRET_SRC = ['app.js', 'places.js'];
